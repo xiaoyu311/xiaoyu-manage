@@ -1,67 +1,80 @@
 <template>
   <div class="categorymanage">
-    <div class="margin demo-upload-list" v-for="(item, index) in uploadList" :key="index">
-      <template v-if="item.status === 'finished'">
-        <img :src="item.url">
-        <div class="demo-upload-list-cover">
-            <Icon type="ios-eye-outline" @click.native="handleView(item.name)"></Icon>
-            <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
+    <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
+      <Form-item>
+        <div class="margin demo-upload-list" v-for="(item, index) in uploadList" :key="index">
+          <template v-if="item.status === 'finished'">
+            <img :src="item.url">
+            <div class="demo-upload-list-cover">
+                <Icon type="ios-eye-outline" @click.native="handleView(item.name)"></Icon>
+                <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
+            </div>
+          </template>
+          <template v-else>
+            <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
+          </template>
         </div>
-      </template>
-      <template v-else>
-        <Progress v-if="item.showProgress" :percent="item.percentage" hide-info></Progress>
-      </template>
-    </div>
-    <Upload
-        ref="upload"
-        :show-upload-list="false"
-        :default-file-list="defaultList"
-        :on-success="handleSuccess"
-        :format="['jpg','jpeg','png']"
-        :max-size="2048"
-        :on-format-error="handleFormatError"
-        :on-exceeded-size="handleMaxSize"
-        :before-upload="handleBeforeUpload"
-        multiple
-        type="drag"
-        action="//jsonplaceholder.typicode.com/posts/"
-        style="display: inline-block;width:58px;">
-        <div style="width: 58px;height:58px;line-height: 58px;">
-            <Icon type="camera" size="20"></Icon>
-        </div>
-    </Upload>
-    <Modal title="查看图片" v-model="visible">
-        <img :src="'https://o5wwk8baw.qnssl.com/' + imgName + '/large'" v-if="visible" style="width: 100%">
-    </Modal>
-    <div class="margin">
-      <Input v-model="value4" icon="ios-close-empty" placeholder="分类名称..." />
-    </div>
-    <div class="margin">
-      <Input v-model="value3" icon="ios-close-empty" placeholder="分类alias..." />
-    </div>
-    <div class="margin">
-      <Input v-model="value2" icon="ios-close-empty" placeholder="链接..." />
-    </div>
-    <div class="margin">
-      <Button type="success"  long>确认提交</Button>
-    </div>
+        <Upload
+            ref="upload"
+            :show-upload-list="false"
+            :default-file-list="defaultList"
+            :on-success="handleSuccess"
+            :format="['jpg','jpeg','png']"
+            :max-size="2048"
+            :on-progress="handleProgress"
+            :on-format-error="handleFormatError"
+            :on-exceeded-size="handleMaxSize"
+            :before-upload="handleBeforeUpload"
+            multiple
+            type="drag"
+            action="/admin/action"
+            style="display: inline-block;width:58px;">
+            <div style="width: 58px;height:58px;line-height: 58px;">
+                <Icon type="camera" size="20"></Icon>
+            </div>
+        </Upload>
+        <Modal title="查看图片" v-model="visible">
+            <img :src="'https://o5wwk8baw.qnssl.com/' + imgName + '/large'" v-if="visible" style="width: 100%">
+        </Modal>
+      </Form-item>
+      <Form-item label="分类名称" prop="name">
+        <Input v-model="formValidate.name" icon="ios-close-empty" placeholder="分类名称..." />
+      </Form-item>
+      <Form-item style="margin-top: 50px;" label="alias" prop="alias">
+        <Input v-model="formValidate.alias" icon="ios-close-empty" placeholder="分类alias..." />
+      </Form-item>
+      <Form-item style="margin-top: 50px;" label="链接" prop="one">
+        <Input v-model="formValidate.one" icon="ios-close-empty" placeholder="链接..." />
+      </Form-item>
+      <Form-item style="margin-top: 50px;">
+        <Button type="success" @click="handleSubmit('formValidate')" long>确认提交</Button>
+      </Form-item>
+    </Form>
   </div>
 </template>
 <script>
-import { Input, Upload, Modal, Icon, Button } from "iview";
+import { Input, Upload, Modal, Icon, Button, Form, FormItem } from "iview";
 export default {
   components: {
     Input,
     Upload,
     Modal,
     Icon,
-    Button
+    Button,
+    Form,
+    FormItem
   },
   data() {
     return {
-      value4: "",
-      value3: "",
-      value2: "",
+      formValidate: {
+        name: "",
+        mail: "",
+        one: ""
+      },
+      ruleValidate: {
+        name: [{ required: true, message: "名称不能为空", trigger: "blur" }],
+        alias: [{ required: true, message: "alias不能为空", trigger: "blur" }]
+      },
       defaultList: [
         {
           name: "a42bdcc1178e62b4694c830f028db5c0",
@@ -91,11 +104,11 @@ export default {
     },
     handleSuccess(res, file) {
       // 因为上传过程为实例，这里模拟添加 url
-      file.url =
-        "https://o5wwk8baw.qnssl.com/7eb99afb9d5f317c912f08b5212fd69a/avatar";
+      file.url = res.path
       file.name = "7eb99afb9d5f317c912f08b5212fd69a";
     },
     handleFormatError(file) {
+      console.log('error')
       this.$Notice.warning({
         title: "文件格式不正确",
         desc:
@@ -103,12 +116,14 @@ export default {
       });
     },
     handleMaxSize(file) {
+      console.log('size')
       this.$Notice.warning({
         title: "超出文件大小限制",
         desc: "文件 " + file.name + " 太大，不能超过 2M。"
       });
     },
     handleBeforeUpload() {
+      console.log('update')
       const check = this.uploadList.length < 5;
       if (!check) {
         this.$Notice.warning({
@@ -116,6 +131,19 @@ export default {
         });
       }
       return check;
+    },
+    handleProgress(event, file, fileList) {
+      console.log(file)
+      console.log(fileList)
+    },
+    handleSubmit(name) {
+      this.$refs[name].validate(valid => {
+        if (valid) {
+          this.$Message.success("提交成功!");
+        } else {
+          this.$Message.error("表单验证失败!");
+        }
+      });
     }
   },
   mounted() {
