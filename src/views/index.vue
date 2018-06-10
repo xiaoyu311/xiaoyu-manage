@@ -16,9 +16,10 @@
               <Icon type="ios-book-outline"></Icon>
               博客管理
             </template>
-            <Menu-item name="1-1">文章管理</Menu-item>
-            <Menu-item name="1-2">评论管理</Menu-item>
-            <Menu-item name="1-3">举报管理</Menu-item>
+            <Menu-item name="1-1">新的文章</Menu-item>
+            <Menu-item name="1-2">新的分类</Menu-item>
+            <Menu-item name="1-4">分类管理</Menu-item>
+            <Menu-item name="1-3">文章管理</Menu-item>
           </Submenu>
           <Menu-item name="2">
             <Icon type="ios-chatbubble"></Icon>
