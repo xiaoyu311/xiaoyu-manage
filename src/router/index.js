@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import index from '../views/index';
 import categorymanage from '../views/categorymanage';
 import newcategory from '../views/newcategory';
+import newarticle from '../views/newarticle';
 
 Vue.use(Router);
 
@@ -11,7 +12,7 @@ export default new Router({
     {
       path: '/',
       component: index,
-      redirect: '/categorymanage',
+      redirect: '/newarticle',
       children: [
         {
           path: 'newcategory',
@@ -21,6 +22,10 @@ export default new Router({
         {
           path: 'categorymanage',
           component: categorymanage
+        },
+        {
+          path: 'newarticle',
+          component: newarticle
         }
       ]
     }
