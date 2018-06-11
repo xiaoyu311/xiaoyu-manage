@@ -1,19 +1,22 @@
 <template>
-  <div class="newarticle_container">
+  <div @keyup.enter="handleAdd" class="newarticle_container">
     <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
-      <Form-item style="margin-top: 30px;" label='标题' prop="title">
-        <Row>
-          <Col span="15">
+      <Row>
+        <Col span="15">
+          <Form-item style="margin-top: 30px;" label='标题' prop="title">
             <Input v-model="formValidate.title" placeholder="请输入标题。。。" />
-          </Col>
-          <Col span="6">
-            <Form-item label='类型' prop="type">
-              <Select v-model="model1" style="width:200px">
-                <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </Form-item>
-          </Col>
-        </Row>
+          </Form-item>
+        </Col>
+        <Col span="6">
+          <Form-item style="margin-top: 30px;" label='类型' prop="type">
+            <Select v-model="defaultModel">
+              <Option v-for="item in CateList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            </Select>
+          </Form-item>
+        </Col>
+      </Row>
+      <Form-item style="margin-top: 30px;" label="链接" prop="Url">
+        <Input v-model="formValidate.Url" placeholder="请输入标题链接。。。" />
       </Form-item>
       <Form-item style="margin-top: 30px;" label="别名" prop="Alias">
         <Input v-model="formValidate.Alias" placeholder="请输入别名。。。" />
@@ -22,20 +25,24 @@
         <Input v-model="formValidate.Summary" placeholder="请输入摘要。。。" />
       </Form-item>
       <Form-item style="margin-top: 30px;" class="tab_form_item" label="标签" prop="Labels">
-        <Input placeholder="Enter添加标签。。。" />
+        <Input placeholder="按Enter添加标签。。。" v-model="formValidate.Labels" />
         <div style="margin-top: 10px;" class="tab_container">
-          <Tag v-for="item in count" :key="item" color="blue" :name="item" type="dot" closable @on-close="handleClose2">标签{{ item + 1 }}</Tag>
+          <Tag v-for="item in Labels" :key="item" color="blue" :name="item" type="dot" closable @on-close="handleClose2">{{ item }}</Tag>
         </div>
       </Form-item>
     </Form>
     <div class="newarticle">
       <markdown-editor :configs="configs" ref="markdownEditor"></markdown-editor>
     </div>
+    <div>
+      <Button @click="Submit" type="success">发表</Button>
+    </div>
   </div>
 </template>
 <script>
+import { getCategory, saveArticle } from "../server";
 import markdownEditor from "vue-simplemde/src/markdown-editor";
-import { Form, FormItem, Input, Row, Col, Select, Option, Tag } from "iview";
+import { Form, FormItem, Input, Row, Col, Select, Option, Tag, Button } from "iview";
 export default {
   components: {
     markdownEditor,
@@ -46,17 +53,19 @@ export default {
     Col,
     Select,
     Option,
-    Tag
+    Tag,
+    Button
   },
   data() {
     return {
-      count: [0, 1, 2],
+      Labels: [],
       formValidate: {
         title: "",
         Alias: "",
-        Summary: ""
+        Summary: "",
+        Url: "",
+        Labels: ""
       },
-      markEle: "",
       configs: {
         autofocus: true,
         placeholder: "请输入文章内容。。。",
@@ -67,51 +76,41 @@ export default {
       ruleValidate: {
         title: [{ required: true, message: "标题不能为空", trigger: "blur" }]
       },
-      cityList: [
-        {
-          value: "beijing",
-          label: "北京市"
-        },
-        {
-          value: "shanghai",
-          label: "上海市"
-        },
-        {
-          value: "shenzhen",
-          label: "深圳市"
-        },
-        {
-          value: "hangzhou",
-          label: "杭州市"
-        },
-        {
-          value: "nanjing",
-          label: "南京市"
-        },
-        {
-          value: "chongqing",
-          label: "重庆市"
-        }
-      ],
-      model1: ""
+      CateList: [],
+      defaultModel: ""
     };
   },
   methods: {
-    get() {
-      let simplemdeValue = this.simplemde.value();
-      let simplemdeHtml = this.simplemde.markdown(simplemdeValue);
-      this.markEle = simplemdeHtml;
-    },
     handleAdd() {
-      if (this.count.length) {
-        this.count.push(this.count[this.count.length - 1] + 1);
-      } else {
-        this.count.push(0);
-      }
+      console.log(22)
+      if (!this.formValidate.Labels) return;
+      this.Labels.push(this.formValidate.Labels);
+      this.formValidate.Labels = '';
     },
     handleClose2(event, name) {
-      const index = this.count.indexOf(name);
-      this.count.splice(index, 1);
+      const index = this.Labels.indexOf(name);
+      this.Labels.splice(index, 1);
+    },
+    async Submit() {
+      const {title, Alias, Summary, Url} = this.formValidate;
+      let simplemdeValue = this.simplemde.value();
+      let simplemdeHtml = this.simplemde.markdown(simplemdeValue);
+      console.log(simplemdeHtml)
+      if (!title) return;
+      if (!this.defaultModel) return;
+      if (!simplemdeHtml) return;
+      let res = await saveArticle(
+        title,
+        this.defaultModel,
+        simplemdeHtml,
+        this.Labels,
+        Alias,
+        Summary,
+        Url,
+      );
+      if (res.status) {
+
+      }
     }
   },
   computed: {
@@ -119,8 +118,12 @@ export default {
       return this.$refs.markdownEditor.simplemde;
     }
   },
-  mounted() {
-    // this.simplemde.togglePreview();
+  async mounted() {
+    let res = await getCategory();
+    if (res.status) {
+      let CateList = res.data.map(item => ({label: item.CateName, value: item._id}));
+      this.CateList = CateList;
+    }
   }
 };
 </script>
