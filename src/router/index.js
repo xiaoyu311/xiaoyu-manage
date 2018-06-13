@@ -12,7 +12,7 @@ export default new Router({
     {
       path: '/',
       component: index,
-      redirect: '/newarticle',
+      redirect: '/newcategory',
       children: [
         {
           path: 'newcategory',

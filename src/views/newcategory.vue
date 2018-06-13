@@ -69,8 +69,7 @@ export default {
       formValidate: {
         CateName: "",
         Alias: "",
-        Link: "",
-        Img: ""
+        Link: ""
       },
       ruleValidate: {
         CateName: [
@@ -80,7 +79,8 @@ export default {
       },
       imgName: "",
       visible: false,
-      uploadList: []
+      uploadList: [],
+      base: ""
     };
   },
   methods: {
@@ -99,7 +99,7 @@ export default {
       file.name = "7eb99afb9d5f317c912f08b5212fd69a";
     },
     handleFormatError(file) {
-      console.log("error");
+      // console.log("error");
       this.$Notice.warning({
         title: "文件格式不正确",
         desc:
@@ -107,32 +107,36 @@ export default {
       });
     },
     handleMaxSize(file) {
-      console.log("size");
+      // console.log("size");
       this.$Notice.warning({
         title: "超出文件大小限制",
         desc: "文件 " + file.name + " 太大，不能超过 2M。"
       });
     },
-    handleBeforeUpload() {
-      console.log("update");
-      const check = this.uploadList.length < 5;
-      if (!check) {
-        this.$Notice.warning({
-          title: "最多只能上传 5 张图片。"
-        });
-      }
-      return check;
+    handleBeforeUpload(file) {
+      let self = this;
+      let fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = function() {
+        self.base = fileReader.result;
+        return false;
+      };
+      return false;
     },
-    handleProgress(event, file, fileList) {
-      console.log(file);
-      console.log(fileList);
-    },
-    async handleSubmit(name) {
+    handleProgress(event, file, fileList) {},
+    handleSubmit(name) {
       this.$refs[name].validate(valid => {
         if (valid) {
-          const { CateName, Alias, Link, Img } = this.formValidate;
-          let res = saveCategories(CateName, Alias, Link, Img);
-          console.log(res);
+          const { CateName, Alias, Link } = this.formValidate;
+          const Img = this.base;
+          const formData = new FormData();
+          const xhr = new XMLHttpRequest();
+          formData.append("CateName", CateName);
+          formData.append("Alias", Alias);
+          formData.append("Link", Link);
+          formData.append("Img", Img);
+          xhr.open("post", "/admin/saveCategories", true);
+          xhr.send(formData);
         } else {
           this.$Message.error("表单验证失败!");
         }
@@ -140,7 +144,15 @@ export default {
     }
   },
   mounted() {
+    // console.log(FileReader)
     this.uploadList = this.$refs.upload.fileList;
+    // 添加分类
+    // export const saveCategories = (CateName, Alias, Link, Img) => fetch('post', '/admin/saveCategories', {
+    //   CateName,
+    //   Alias,
+    //   Link,
+    //   Img
+    // });
   }
 };
 </script>
