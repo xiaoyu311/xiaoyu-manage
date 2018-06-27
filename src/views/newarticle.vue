@@ -42,7 +42,7 @@
 <script>
 import { getCategory, saveArticle } from "../server";
 import markdownEditor from "vue-simplemde/src/markdown-editor";
-import { Form, FormItem, Input, Row, Col, Select, Option, Tag, Button } from "iview";
+import { Form, FormItem, Input, Row, Col, Select, Option, Tag, Button, Message } from "iview";
 export default {
   components: {
     markdownEditor,
@@ -109,8 +109,17 @@ export default {
         Url,
       );
       if (res.status) {
-
+        this.formValidate.title = "";
+        this.formValidate.Alias = "";
+        this.formValidate.Summary = "";
+        this.formValidate.Url = "";
+        this.formValidate.Labels = "";
+        this.defaultModel = "";
+        this.Labels = [];
+        Message.success('发表成功');
+        return;
       }
+      Message.error('失败');
     }
   },
   computed: {

@@ -47,7 +47,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     publicPath: config.dev.assetsPublicPath,
     proxy: {
       "/admin": {
-        target: "http://localhost:3001",
+        target: "https://www.xxiaoyu.com",
+        // target: "http://localhost:3031",
       }
 
     },

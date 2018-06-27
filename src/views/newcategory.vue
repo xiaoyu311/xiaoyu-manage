@@ -52,7 +52,7 @@
   </div>
 </template>
 <script>
-import { Input, Upload, Modal, Icon, Button, Form, FormItem } from "iview";
+import { Input, Upload, Modal, Icon, Button, Form, FormItem, Message } from "iview";
 import { saveCategories } from "../server";
 export default {
   components: {
@@ -137,14 +137,22 @@ export default {
           formData.append("Img", Img);
           xhr.open("post", "/admin/saveCategories", true);
           xhr.send(formData);
+          xhr.onreadystatechange = () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+              this.formValidate.CateName = '';
+              this.formValidate.Alias = '';
+              this.formValidate.Link = '';
+              this.base = '';
+              Message.success('发送成功');
+            }
+          }
         } else {
-          this.$Message.error("表单验证失败!");
+          Message.error("表单验证失败!");
         }
       });
-    }
+    },
   },
   mounted() {
-    // console.log(FileReader)
     this.uploadList = this.$refs.upload.fileList;
     // 添加分类
     // export const saveCategories = (CateName, Alias, Link, Img) => fetch('post', '/admin/saveCategories', {

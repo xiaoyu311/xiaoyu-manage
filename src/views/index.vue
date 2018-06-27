@@ -6,7 +6,7 @@
           <img v-show="side" src="https://iview.github.io/iview-admin/dist/9f35d093728efc834cf6f8b15fd17eea.jpg" alt="">
           <img v-show="!side" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAFsAAABbCAYAAAAcNvmZAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAnhJREFUeNrs3U9LFGEcwPGf7ebaYWGhCBLCPQaRbNFd9w2YHrwF5dGTBtG1vIpit45l9AJ8BbmetQi6qCdB2EMprH/AXFzrN/qgo+2Ms+Mz0+P2/cLDoM4M8uHh2XkOy4gQEV2qjjgXPZiqDeqhT0dJR9GM/6GKjpqOBR1z318W1hLBVuCCHl7reK6jwDw9wZ9Q9Io1bIUeN9AgB6MPKXotNraZzTNmNlN4HnRZwb+1jG2g5826TBbAr4VcOAN0yx1NUJ2opcjYZo1m6YgP/j4Stu+pg+JXUsc3UWY2Tx12GjMTNxSb5cPecjIYiG12hsxqez0Lm9l9+FitPwybRz3L6WrRH4RdhCe5wP6H2AQ22AS2u2Wt3m3068XnbNwQmS8eH329KnfJk/udks91OAXUO711hWf2rT2RgdUzv/KQnz7KOQfdHstIriHSvevDvs6aTWCDTWCDDTa1Mfbm6aZm+WfDSZyVHw2HsT/3RDtv6Y7Ifubkx09f6lLdPnQKemf/t0xWfjm8XV+5KVLNi+TrwefUM39t1T3o4Y+7cu92puklA7rp8XaZUWejDaRlvY8H7i720ZToPB4xZtLi+kHTvz2+m7VyHz4g+YAksMEmsMEGm8AGm8AGm8AGG2wCG2wCG2ywCWywCWywCWywwSawwSawwQabwAabwAabwE637FX4J5fWD+RdxHOrW4dgXybv21+ufgOMZQRsAhvstmoN7JSg/W9pAjvZ5lhG0msW7HSqnH85ENjJ9YKnkZSgm73yCmz7fVDotzxnpwM9wqYmnaVjhB1kwk8dOh4GLR3+sljF3oJ7G5bZsJdtXoRdxrG1LTgR/RFgAEIioEX14WSDAAAAAElFTkSuQmCC" alt="">
         </div>
-        <Menu v-show="side" theme="dark">
+        <Menu @on-select="selectArticle" v-show="side" theme="dark">
           <Menu-item name="2">
             <Icon type="stats-bars"></Icon>
             网站统计
@@ -16,8 +16,8 @@
               <Icon type="ios-book-outline"></Icon>
               博客管理
             </template>
-            <Menu-item name="1-1">新的文章</Menu-item>
-            <Menu-item name="1-2">新的分类</Menu-item>
+            <Menu-item name="newarticle">新的文章</Menu-item>
+            <Menu-item name="newcategory">新的分类</Menu-item>
             <Menu-item name="1-4">分类管理</Menu-item>
             <Menu-item name="1-3">文章管理</Menu-item>
           </Submenu>
@@ -142,7 +142,7 @@
     <div :style="{left: side ? '240px' : '60px'}" class="single-page-con">
       <div class="single-page">
         <div class="home-main">
-          <h2>管理</h2>
+          <h2>{{title}}</h2>
         </div>
         <div class="pages">
           <router-view />
@@ -163,13 +163,25 @@ export default {
   },
   data() {
     return {
-      side: true
+      side: true,
+      title: '首页',
+      path: {
+        '/newcategory': '新的分类',
+        '/newarticle': '新的文章'
+      }
     };
   },
   methods: {
     sideNone() {
       this.side = !this.side;
+    },
+    selectArticle(name) {
+      this.$router.push(name);
+      this.title = name;
     }
+  },
+  created() {
+    this.title = this.path[this.$route.fullPath]
   }
 };
 </script>
